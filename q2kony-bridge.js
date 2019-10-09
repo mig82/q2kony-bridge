@@ -1,13 +1,14 @@
 //Let's declare a global var Q so that other modules can find it.
 var Q;
 
+/*export $q2k */
 var $q2k = (function(){
-	
+
 	/**
 	* IMPORTANT: From "[Mobile|Tablet]>Properties>App Events>Post Appinit" add
 	* a snippet with a call to this function to your app's post-appinit event.
 	*/
-	function _bootstrap(){
+	function bootstrap(){
 		Q = kony.Q;
 		Q.longStackSupport = true;
 	}
@@ -18,7 +19,7 @@ var $q2k = (function(){
 	*
 	* 	$q2k.animate(widget, steps, config)
 	*		.progress(function(t){
-	*			//Use t.widget, t.animationHandle, t.elapsedTime	
+	*			//Use t.widget, t.animationHandle, t.elapsedTime
 	*		})
 	*		.then(function(t){
 	*			//Use t.widget, t.animationHandle, t.elapsedTime
@@ -27,7 +28,7 @@ var $q2k = (function(){
 	*			//Log or notify the error.
 	*		});
 	*/
-	function _animate(widget, steps, config){
+	function animate(widget, steps, config){
 
 		return Q.Promise(function(resolve, reject, notify) {
 
@@ -63,29 +64,30 @@ var $q2k = (function(){
 			}
 		});
 	}
-	
-	function _init(appKey, appSecret, serviceUrl){
 
-		return Q.Promise(function(resolve, reject, notify) {
+	function init(appKey, appSecret, serviceUrl){
+
+		return Q.Promise(function(resolve, reject, /*notify*/) {
 
 			var client = new kony.sdk();
-			client.init(appKey, appSecret, serviceUrl, function(config){
+			client.init(appKey, appSecret, serviceUrl, function(/*config*/){
 				resolve(client);
 			}, function(e){
 				reject({message: 'Could not initialize an instance of the Fabric client/sdk for\n\t' +
 						`key: ${appKey}\n\t` +
-						`secret: ${appSecret.substring(appSecret.length - 4)}`
+						`secret: ${appSecret.substring(appSecret.length - 4)}` +
+						`error: ${JSON.stringify(e)}`
 				});
 			});
 		});
 	}
 
-	function _call(client, serviceName, operationName, headers, data, options){
+	function invoke(client, serviceName, operationName, headers, data, options){
 
-		return Q.Promise(function(resolve, reject, notify) {
+		return Q.Promise(function(resolve, reject/*, notify*/) {
 
 			function onSuccess(response){
-				if(response.opstatus == 0){
+				if(response.opstatus === 0 || response.opstatus === "0"){
 					resolve(response);
 				}
 				else{
@@ -107,8 +109,8 @@ var $q2k = (function(){
 		});
 	}
 
-	function _setCurrentTheme(theme){		
-		return Q.Promise(function(resolve, reject, notify) {
+	function setCurrentTheme(theme){
+		return Q.Promise(function(resolve, reject/*, notify*/) {
 			kony.theme.setCurrentTheme(
 				theme,
 				function () {
@@ -117,19 +119,19 @@ var $q2k = (function(){
 				function (code, message) {
 					reject(new Error(`code ${code}:${message}`));
 				}
-			);	
+			);
 		});
 	}
 
 	return {
-		bootstrap: _bootstrap,
-		animate: _animate,
+		bootstrap: bootstrap,
+		animate: animate,
 		fabric: {
-			init: _init,
-			call: _call
+			init: init,
+			invoke: invoke
 		},
 		theme: {
-			setCurrentTheme: _setCurrentTheme
+			setCurrentTheme: setCurrentTheme
 		}
 	};
 
